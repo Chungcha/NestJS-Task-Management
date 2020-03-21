@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task } from './tasks.model';
+import { CreateTaskDTO } from './dto/create-task.dto';
 
 @Controller('tasks')
 //controller decorator. 'tasks' is the url
@@ -20,5 +21,22 @@ export class TasksController {
     getAllTasks(): Task[] {
         return this.tasksService.getAllTasks();
     }
+
+    // @Post()
+    // createTask(
+    //     @Body('title') title: string,
+    //     @Body('description') description: string
+    //     // body decorator.  to retrieve the entire request body (@Body() /*html will collect the entire requestbody and put it here =>*/ body)
+    //     // Extracting specific body parameters that we want.
+    // ): Task {
+    //     return this.tasksService.createTask(title, description);
+    // }
+
+    @Post()
+    createTask(@Body() createTaskDTO: CreateTaskDTO): Task {
+        return this.tasksService.createTask(createTaskDTO);
+    }
+    // the parameter has the entire request body and expects it to be shape of the DTO. 
+    // needs to be changed in the service.
 
 }
