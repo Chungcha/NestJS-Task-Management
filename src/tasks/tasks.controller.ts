@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, Query } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task, TaskStatus } from './tasks.model';
 import { CreateTaskDTO } from './dto/create-task.dto';
+import { GetTasksFilterDTO } from './dto/get-tasks-filter.dto';
 
 @Controller('tasks')
 //controller decorator. 'tasks' is the url
@@ -15,11 +16,21 @@ export class TasksController {
     // dependency injection is done in the constructor of a class.
     // when instantized, it is going to look for a TaskService object, find/create it and assign it as an argument as taskService.  Assigns it as an argument to task service, it is a private property in the class, allowing other methods in the class to use it.
 
+    // @Get()
+    // // won't be called unless we tell nest what type of req it gonna handle.  Add a decorator.
+    // // when there is a get request going to tasks, the get all tasks will go.
+    // getAllTasks(): Task[] {
+    //     return this.tasksService.getAllTasks();
+    // }
+
     @Get()
-    // won't be called unless we tell nest what type of req it gonna handle.  Add a decorator.
-    // when there is a get request going to tasks, the get all tasks will go.
-    getAllTasks(): Task[] {
-        return this.tasksService.getAllTasks();
+    getTasks(@Query() filterDTO: GetTasksFilterDTO): Task[] {
+        if (Object.keys(filterDTO).length) {
+            // if keys exist, that means there are values.
+            return this.tasksService.getTasksWithFilters(filterDTO)
+        } else {
+            return this.tasksService.getAllTasks();
+        }
     }
 
     // @Post()

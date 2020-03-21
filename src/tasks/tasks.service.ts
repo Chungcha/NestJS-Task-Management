@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Task, TaskStatus } from './tasks.model';
 import * as uuid from 'uuid/v1';
 import { CreateTaskDTO } from './dto/create-task.dto';
+import { GetTasksFilterDTO } from './dto/get-tasks-filter.dto';
 
 @Injectable()
 // injectable decorator. makes this available for injection in other components part of the same module. 
@@ -15,6 +16,25 @@ export class TasksService {
     getAllTasks(): Task[] {
         //getAllTasks method proxies the array since it is private property.
         return this.tasks;
+    }
+
+    getTasksWithFilters(filterDto: GetTasksFilterDTO){
+        const { status, search } = filterDto;
+
+        let tasks = this.getAllTasks()
+        // store all tasks in this variable and filter if needed.
+
+        if (status) {
+            tasks = tasks.filter( task => task.status === status)
+        }
+
+        if (search) {
+            tasks = tasks.filter( task => {
+                return task.title.includes(search) || task.description.includes(search)
+            })
+        }
+
+        return tasks
     }
 
     // createTask(title: string, description: string): Task {
