@@ -60,6 +60,13 @@ export class TasksService {
         const task = this.tasks.find(task => task.id === id);
         this.tasks = this.tasks.filter(item => item !== task)
         return task
+        // returning the deleted instance
+    }
+
+    updateTaskStatus(id: string, status: TaskStatus ): Task {
+        const updatedTask = this.getTasksById(id)
+        updatedTask.status = status
+        return updatedTask
     }
 
 }
