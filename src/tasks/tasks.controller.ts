@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task } from './tasks.model';
 import { CreateTaskDTO } from './dto/create-task.dto';
@@ -38,5 +38,17 @@ export class TasksController {
     }
     // the parameter has the entire request body and expects it to be shape of the DTO. 
     // needs to be changed in the service.
+
+    @Get('/:id')
+    getTaskById(@Param('id') id: string): Task {
+        // Param decorator looks for url param 'id'
+        return this.tasksService.getTasksById(id);
+    }
+
+    @Delete('/:id')
+    deleteTask(@Param('id') id:string): Task {
+        return this.tasksService.deleteTask(id);
+    }
+
 
 }
