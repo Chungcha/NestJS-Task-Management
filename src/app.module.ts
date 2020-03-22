@@ -1,8 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TasksModule } from './tasks/tasks.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeOrmConfig } from './config/typeorm.config';
 
 @Module({
-  imports: [TasksModule]
+  imports: [
+    TasksModule,
+    TypeOrmModule.forRoot(typeOrmConfig)
+    // this is root module. config applies to all sub modules.  Need to provide the options object.
+  ]
 })
 export class AppModule {}
 
