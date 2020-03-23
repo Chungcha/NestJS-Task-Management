@@ -7,7 +7,7 @@ export class Task extends BaseEntity {
     @PrimaryGeneratedColumn()
     // this decorator tells typeorm this is a primary key column.  ID sould be generated and incremated with new task.
     id: number;
-    // typicall number
+    // typically number
 
     @Column()
     title: string;
