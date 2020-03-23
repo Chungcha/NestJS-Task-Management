@@ -1,92 +1,156 @@
-import { Injectable } from '@nestjs/common';
-import { Task, TaskStatus } from './tasks.model';
-import * as uuid from 'uuid/v1';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { TaskStatus } from './task-status.enum';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { GetTasksFilterDTO } from './dto/get-tasks-filter.dto';
+import { TaskRepository } from './task.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Task } from './task.entity';
 
 @Injectable()
 // injectable decorator. makes this available for injection in other components part of the same module. 
 // nest g service tasks
 export class TasksService {
 
-    private tasks: Task[] = [];
-    // if not private, any other components that injects this service can make changes to the array...which is the service's job, not other other components.
-    // expected to be an array of tasks.
+    // private tasks: Task[] = [];
+    // // if not private, any other components that injects this service can make changes to the array...which is the service's job, not other other components.
+    // // expected to be an array of tasks.
 
-    getAllTasks(): Task[] {
-        //getAllTasks method proxies the array since it is private property.
-        return this.tasks;
-    }
+    // getAllTasks(): Task[] {
+    //     //getAllTasks method proxies the array since it is private property.
+    //     return this.tasks;
+    // }
 
-    getTasksWithFilters(filterDto: GetTasksFilterDTO){
-        const { status, search } = filterDto;
+    // getTasksWithFilters(filterDto: GetTasksFilterDTO){
+    //     const { status, search } = filterDto;
 
-        let tasks = this.getAllTasks()
-        // store all tasks in this variable and filter if needed.
+    //     let tasks = this.getAllTasks()
+    //     // store all tasks in this variable and filter if needed.
 
-        if (status) {
-            tasks = tasks.filter( task => task.status === status)
-        }
+    //     if (status) {
+    //         tasks = tasks.filter( task => task.status === status)
+    //     }
 
-        if (search) {
-            tasks = tasks.filter( task => {
-                return task.title.includes(search) || task.description.includes(search)
-            })
-        }
+    //     if (search) {
+    //         tasks = tasks.filter( task => {
+    //             return task.title.includes(search) || task.description.includes(search)
+    //         })
+    //     }
 
-        return tasks
-    }
+    //     return tasks
+    // }
 
-    // createTask(title: string, description: string): Task {
-    //     // the parameters we want from the user.  ID is created in the service and status will default to open
-    //     // returns a task object on line 32
+    // // createTask(title: string, description: string): Task {
+    // //     // the parameters we want from the user.  ID is created in the service and status will default to open
+    // //     // returns a task object on line 32
+    // //     const task: Task = {
+    // //         id: uuid(),
+    // //         // uuid package creates ID's for us.
+    // //         title,
+    // //         // JS syntactic sugah. Object Literal Syntax where if the Key is the same as the variable used to define value, just define the key. Same as title: title
+    // //         description,
+    // //         status: TaskStatus.OPEN
+    // //     }
+
+    // //     this.tasks.push(task);
+    // //     return task;
+    // //     // GOOD PRACTICE TO RETURN NEWLY CREATED RESOURCE!!!!!
+    // //     // It reduces load on application not requiring the front end to make another request.
+
+    // // }
+
+    // createTask(createTaskDTO: CreateTaskDTO): Task {
+    //     const { title, description } = createTaskDTO
+    //     // reconstructs the object with the selected keys in the DTO
     //     const task: Task = {
     //         id: uuid(),
-    //         // uuid package creates ID's for us.
     //         title,
-    //         // JS syntactic sugah. Object Literal Syntax where if the Key is the same as the variable used to define value, just define the key. Same as title: title
     //         description,
     //         status: TaskStatus.OPEN
     //     }
 
     //     this.tasks.push(task);
     //     return task;
-    //     // GOOD PRACTICE TO RETURN NEWLY CREATED RESOURCE!!!!!
-    //     // It reduces load on application not requiring the front end to make another request.
 
     // }
 
-    createTask(createTaskDTO: CreateTaskDTO): Task {
-        const { title, description } = createTaskDTO
-        // reconstructs the object with the selected keys in the DTO
-        const task: Task = {
-            id: uuid(),
-            title,
-            description,
-            status: TaskStatus.OPEN
+    // getTasksById(id: string): Task {
+    //     return this.tasks.find(task => task.id === id);
+    // }
+
+    // deleteTask(id: string): Task {
+    //     // could also return VOID if no return
+    //     const task = this.tasks.find(task => task.id === id);
+    //     this.tasks = this.tasks.filter(item => item !== task)
+    //     return task
+    //     // returning the deleted instance
+    // }
+
+    // updateTaskStatus(id: string, status: TaskStatus ): Task {
+    //     const updatedTask = this.getTasksById(id)
+    //     updatedTask.status = status
+    //     return updatedTask
+    // }
+
+    constructor(
+        @InjectRepository(TaskRepository)
+        // inject task repo to service.  Tells nest we want to use this Repo and provide it to the private taskrepo parameter.
+        private taskRepository: TaskRepository
+        // available throughout the service. this.TaskRepository
+    ){}
+
+    async getTaskById(id: number): Promise<Task> {
+        // any ASYNC function is expected to return a promise.
+        // id is no longer a string but a number because of our entity.
+        const found = await this.taskRepository.findOne(id);
+        // findOne is a repository method that takes in an id and returns a promise containing that entity.
+        // any interaction with the database is asynchronous, we trigger it but we don't know when it will end.  Handle it with async
+        // await stops execution and waits for the async operation to finish before continuing.
+
+        if (!found) {
+            throw new NotFoundException(`Task with ID "${id} not found`);
+        } 
+
+        return found
+
+    }
+
+    async createTask(createTaskDTO: CreateTaskDTO): Promise<Task> {
+
+        // const { title, description } = createTaskDTO;
+        // // id is generated by the db.
+
+        // const task = new Task();
+        // // makes new task based on the entity.
+        // task.title = title;
+        // task.description = description;
+        // task.status = TaskStatus.OPEN;
+        // await task.save();
+        // // save() is an async operation so it needs await and async on the method. It also will therefore return a promise.
+
+        // return task;
+
+        // // this should go in the repo.
+        // too much logic.  can be extracted to the repo as it has to do with the database.
+        // keeps service slim.
+
+        return this.taskRepository.createTask(createTaskDTO);
+
+    }
+
+    async deleteTask(id: number): Promise<void> {
+    
+        // const task = await this.getTaskById(id);
+        // // return await task.remove()
+        // return this.taskRepository.remove(task)
+        // // lots of database calls though. Delete is better.
+    
+        const result = await this.taskRepository.delete(id);
+        // delete returns results and the number of affected that were deleted
+
+        if (result.affected === 0) {
+            throw new NotFoundException(`Task with ID "${id} not found`);
         }
 
-        this.tasks.push(task);
-        return task;
-
-    }
-
-    getTasksById(id: string): Task {
-        return this.tasks.find(task => task.id === id);
-    }
-
-    deleteTask(id: string): Task {
-        // could also return VOID if no return
-        const task = this.tasks.find(task => task.id === id);
-        this.tasks = this.tasks.filter(item => item !== task)
-        return task
-        // returning the deleted instance
-    }
-
-    updateTaskStatus(id: string, status: TaskStatus ): Task {
-        const updatedTask = this.getTasksById(id)
-        updatedTask.status = status
-        return updatedTask
     }
 
 }
